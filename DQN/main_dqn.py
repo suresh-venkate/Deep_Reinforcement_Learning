@@ -15,9 +15,9 @@ if __name__ == '__main__':
     # Instantiate DQN agent
     agent = DQNAgent(gamma=0.99, epsilon=1, lr=0.0001,
                      input_dims=(env.observation_space.shape),
-                     n_actions=env.action_space.n, mem_size=500, eps_min=0.1,
+                     n_actions=env.action_space.n, mem_size=50000, eps_min=0.1,
                      batch_size=32, replace=1000, eps_dec=1e-5,
-                     chkpt_dir='./Checkpoints/', algo='DQNAgent',
+                     chkpt_dir='/content/Checkpoints/', algo='DQNAgent',
                      env_name='PongNoFrameskip-v4')
 
     if load_checkpoint:
@@ -56,7 +56,7 @@ if __name__ == '__main__':
                 agent.learn()  # Perform learning step
             observation = observation_  # S(t+1) = St
             n_steps += 1  # Update n_steps after every env. step
-            print("Episode: %d; Step %d; Score: %d" %((i+1), n_steps, score), steps_array)
+            #print("Episode: %d; Step %d; Score: %d" %((i+1), n_steps, score), steps_array)
             ### End of episode
 
         ### Begin Episode post-processing
@@ -70,7 +70,7 @@ if __name__ == '__main__':
             best_score = avg_score
         print('Episode: ',(i+1), 'Score: ',score, 'Average_Score:  %.1f' %(avg_score),
               'Best_Score:  %.1f' %(best_score), 'epsilon:  %.2f' %(agent.epsilon),
-              'Steps: ', n_steps, 'Steps_array: ',steps_array)
+              'Steps: ', n_steps)
         ### End Episode post-processing
 
     # All episodes completed
