@@ -2,7 +2,7 @@ import collections
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-import gym
+import gymnasium as gym
 
 def plot_learning_curve(x, scores, epsilons, filename, lines=None):
     fig=plt.figure()
@@ -76,9 +76,9 @@ class RepeatActionAndMaxFrame(gym.Wrapper):
 
         max_frame = np.maximum(self.frame_buffer[0], self.frame_buffer[1]) # Obtain max. of previous 2 frames
                                                                            # pixel by pixel
-        return max_frame, t_reward, done, info
+        return max_frame, t_reward, done, info, 'junk'
 
-    def reset(self):
+    def reset(self, seed, options):
         """
         Reset wrapped environment
         :return: Reset state
@@ -100,8 +100,8 @@ class RepeatActionAndMaxFrame(gym.Wrapper):
         self.frame_buffer[0] = obs[0]  # Update frame buffer with obs.
         #self.frame_buffer[0] = obs  # Update frame buffer with obs.
 
-        #return obs
-        return obs[0]
+        return obs
+        #return obs[0]
 
 class PreprocessFrame(gym.ObservationWrapper):
     """
@@ -119,6 +119,7 @@ class PreprocessFrame(gym.ObservationWrapper):
                                                                         # new shape and new scale
 
     def observation(self, obs):
+        obs = obs.astype('uint8')
         new_frame = cv2.cvtColor(obs, cv2.COLOR_RGB2GRAY)
         resized_screen = cv2.resize(new_frame, self.shape[1:],
                                     interpolation=cv2.INTER_AREA)
@@ -144,11 +145,11 @@ class StackFrames(gym.ObservationWrapper):
                             dtype=np.float32)  # Update observation_space
         self.stack = collections.deque(maxlen=repeat)  # Deque to hold 'm' observations
 
-    def reset(self):
+    def reset(self, seed, options):
         self.stack.clear()
         observation = self.env.reset()
         for _ in range(self.stack.maxlen):
-            self.stack.append(observation)
+            self.stack.append(observation[0])
         return np.array(self.stack).reshape(self.observation_space.low.shape)
 
     def observation(self, observation):
@@ -157,6 +158,7 @@ class StackFrames(gym.ObservationWrapper):
 
 def make_env(env_name, shape=(84,84,1), repeat=4, clip_rewards=False,
              no_ops=0, fire_first=False):
+    #env = gym.make(env_name, render_mode = 'human')
     env = gym.make(env_name)
     env = RepeatActionAndMaxFrame(env, repeat, clip_rewards, no_ops, fire_first)
     env = PreprocessFrame(shape, env)
